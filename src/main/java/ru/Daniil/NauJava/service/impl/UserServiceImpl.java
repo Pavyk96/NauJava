@@ -7,10 +7,11 @@ import ru.Daniil.NauJava.model.User;
 import ru.Daniil.NauJava.repo.UserRepository;
 import ru.Daniil.NauJava.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * UserServiceImpl
+ * Реализация сервиса пользователей
  *
  * @author Daniil Mezev
  */
@@ -32,52 +33,35 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(String name, int balance) {
-        if (name == null || name.isBlank()) {
+    public User createUser(String fullName, String email, String phone) {
+        if (fullName == null || fullName.isBlank()) {
             throw new IllegalArgumentException("Имя не должно быть пустым");
         }
-        if (balance < 0) {
-            throw new IllegalArgumentException("Баланс не может быть отрицательным");
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email не должен быть пустым");
+        }
+        if (phone == null || phone.isBlank()) {
+            throw new IllegalArgumentException("Телефон не должен быть пустым");
         }
 
         User user = new User();
-        user.setName(name);
-        user.setBalance(balance);
+        user.setFullName(fullName);
+        user.setEmail(email);
+        user.setPhone(phone);
 
-        return repository.create(user);
+        return repository.save(user);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return repository.findAll();
+        List<User> users = new ArrayList<>();
+        repository.findAll().forEach(users::add);
+        return users;
     }
 
     @Override
     public User getUserById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь с id=" + id + " не найден"));
-    }
-
-    @Override
-    public void transferMoney(Long fromUserId, Long toUserId, int amount) {
-        if (fromUserId.equals(toUserId)) {
-            throw new IllegalArgumentException("Нельзя переводить деньги самому себе");
-        }
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Сумма перевода должна быть больше 0");
-        }
-
-        User fromUser = getUserById(fromUserId);
-        User toUser = getUserById(toUserId);
-
-        if (fromUser.getBalance() < amount) {
-            throw new IllegalArgumentException("Недостаточно средств для перевода");
-        }
-
-        fromUser.setBalance(fromUser.getBalance() - amount);
-        toUser.setBalance(toUser.getBalance() + amount);
-
-        repository.update(fromUser);
-        repository.update(toUser);
     }
 }
