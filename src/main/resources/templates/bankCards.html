@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Bank Cards List</title>
+</head>
+<body>
+<h1>Bank Cards List</h1>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Card Number</th>
+        <th>User Email</th>
+    </tr>
+    <tr th:each="card : ${bankCards}">
+        <td th:text="${card.id}"></td>
+        <td th:text="${card.cardNumber}"></td>
+        <td th:text="${card.userEmail}"></td>
+    </tr>
+</table>
+</body>
+</html>

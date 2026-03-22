@@ -1,10 +1,14 @@
 spring:
   application:
     name: NauJava
+
   datasource:
     url: jdbc:postgresql://localhost:5432/project
     username: project
     password: project
+    driver-class-name: org.postgresql.Driver
+    initialization-mode: always
+
   jpa:
     open-in-view: false
     show-sql: false
@@ -12,6 +16,13 @@ spring:
       ddl-auto: update
     properties:
       hibernate.format_sql: true
+
+  doc:
+    api-docs:
+      enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui/index.html
 
 app:
   name: Bank Console App
