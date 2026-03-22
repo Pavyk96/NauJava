@@ -1,51 +1,86 @@
 package ru.Daniil.NauJava.model;
 
+import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Пользователь
+ * Пользователя
  *
  * @author Daniil Mezev
  */
+@Entity
+@Table(name = "users")
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private int balance;
+
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String phone;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BankAccount> accounts = new ArrayList<>();
 
     public User() {
     }
 
-    public User(Long id, String name, int balance) {
-        this.id = id;
-        this.name = name;
-        this.balance = balance;
+    public User(String fullName, String email, String phone) {
+        this.fullName = fullName;
+        this.email = email;
+        this.phone = phone;
     }
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getFullName() {
+        return fullName;
     }
 
-    public String getName() {
-        return name;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getEmail() {
+        return email;
     }
 
-    public int getBalance() {
-        return balance;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public void setBalance(int balance) {
-        this.balance = balance;
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public List<BankAccount> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(List<BankAccount> accounts) {
+        this.accounts = accounts;
     }
 
     @Override
     public String toString() {
-        return "User{id=" + id + ", name='" + name + "', balance=" + balance + "}";
+        return "User{" +
+                "id=" + id +
+                ", fullName='" + fullName + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                '}';
     }
 }
