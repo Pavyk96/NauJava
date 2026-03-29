@@ -1,6 +1,7 @@
 package ru.Daniil.NauJava.service.impl;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.Daniil.NauJava.config.AppConfig;
 import ru.Daniil.NauJava.model.User;
@@ -9,21 +10,19 @@ import ru.Daniil.NauJava.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-/**
- * Реализация сервиса пользователей
- *
- * @author Daniil Mezev
- */
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
     private final AppConfig appConfig;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository repository, AppConfig appConfig) {
+    public UserServiceImpl(UserRepository repository, AppConfig appConfig, PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.appConfig = appConfig;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostConstruct
@@ -33,7 +32,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(String fullName, String email, String phone) {
+    public User createUser(String fullName, String email, String phone, String password) {
         if (fullName == null || fullName.isBlank()) {
             throw new IllegalArgumentException("Имя не должно быть пустым");
         }
@@ -44,10 +43,13 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Телефон не должен быть пустым");
         }
 
+        String hashedPassword = passwordEncoder.encode(password);
+
         User user = new User();
         user.setFullName(fullName);
         user.setEmail(email);
         user.setPhone(phone);
+        user.setPassword(hashedPassword);
 
         return repository.save(user);
     }
@@ -63,5 +65,11 @@ public class UserServiceImpl implements UserService {
     public User getUserById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь с id=" + id + " не найден"));
+    }
+
+    @Override
+    public User getUserByUsername(String username) {
+        return repository.findByEmail(username)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь с username=" + username + " не найден"));
     }
 }

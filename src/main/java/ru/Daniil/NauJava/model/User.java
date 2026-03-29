@@ -1,14 +1,7 @@
 package ru.Daniil.NauJava.model;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
-/**
- * Пользователя
- *
- * @author Daniil Mezev
- */
 @Entity
 @Table(name = "users")
 public class User {
@@ -26,16 +19,35 @@ public class User {
     @Column(nullable = false)
     private String phone;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BankAccount> accounts = new ArrayList<>();
+    @Column(nullable = false)
+    private String password;
 
-    public User() {
-    }
+    @Column(name = "role_name", nullable = false)
+    private final String roleName = "ROLE_USER";
 
-    public User(String fullName, String email, String phone) {
+    public User() {}
+
+    public User(String fullName, String email, String phone, String password) {
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
+        this.password = password;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", fullName='" + fullName + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", password='" + password + '\'' +
+                ", roleName='" + roleName + '\'' +
+                '}';
     }
 
     public Long getId() {
@@ -66,21 +78,11 @@ public class User {
         this.phone = phone;
     }
 
-    public List<BankAccount> getAccounts() {
-        return accounts;
+    public String getPassword() {
+        return password;
     }
 
-    public void setAccounts(List<BankAccount> accounts) {
-        this.accounts = accounts;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", fullName='" + fullName + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                '}';
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

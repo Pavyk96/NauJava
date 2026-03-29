@@ -11,9 +11,11 @@ import java.util.List;
  */
 public interface UserService {
 
-    User createUser(String fullName, String email, String phone);
+    User createUser(String fullName, String email, String phone, String password);
 
     List<User> getAllUsers();
 
     User getUserById(Long id);
+
+    User getUserByUsername(String username);
 }
