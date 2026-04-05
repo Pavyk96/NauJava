@@ -19,8 +19,9 @@ public class SpringSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/reports/**"))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/registration", "/login").permitAll()
+                        .requestMatchers("/registration", "/login", "/reports/**").permitAll()
                         .requestMatchers("/swagger-ui/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
