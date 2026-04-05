@@ -2,6 +2,10 @@ spring:
   application:
     name: NauJava
 
+  liquibase:
+    change-log: db/changelog-master.yaml
+    enabled: true
+
   datasource:
     url: jdbc:postgresql://localhost:5432/project
     username: project
@@ -24,7 +28,6 @@ spring:
     enabled: true
     path: /swagger-ui/index.html
 
-app:
   name: Bank Console App
   version: 1.0.0
 
@@ -36,3 +39,7 @@ management:
   endpoint:
     health:
       show-details: always
+
+  kafka:
+    consumer:
+    producer:

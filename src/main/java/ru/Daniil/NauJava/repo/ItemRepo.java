@@ -9,6 +9,6 @@ import ru.Daniil.NauJava.model.Item;
  *
  * @author Daniil Mezev
  */
-@Repository
+//@Repository
 public interface ItemRepo extends JpaRepository<Item, Long> {
 }

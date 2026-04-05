@@ -14,6 +14,9 @@ import java.util.List;
 @Entity
 @Setter
 @Getter
+@Table(
+        indexes = @Index(name = "idx_cart_name", columnList = "name")
+)
 public class Cart {
 
     @Id

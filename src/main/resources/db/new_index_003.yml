@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 3
+      author: Daniil
+      changes:
+        - dropIndex:
+            indexName: index_name_new
+            tableName: cart
+        - sql:
+            dbms: postgresql
+            comment: "Create HASH index on the 'name' column"
+            sql: |
+              CREATE INDEX idx_cart_name ON cart USING HASH (name);

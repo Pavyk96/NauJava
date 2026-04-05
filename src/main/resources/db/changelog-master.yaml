@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: db/new_index_001.yml
+  - include:
+      file: db/new_index_002.yml
+  - include:
+      file: db/new_index_003.yml
+  - include:
+      file: db/new_index_005.yml

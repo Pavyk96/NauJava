@@ -2,6 +2,8 @@ package ru.Daniil.NauJava.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.Daniil.NauJava.AOP.Logger;
 import ru.Daniil.NauJava.model.Cart;
 import ru.Daniil.NauJava.repo.CartRepo;
@@ -17,6 +19,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Logger
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public List<Cart> getAllCarts() {
         return cartRepo.findAll();
     }

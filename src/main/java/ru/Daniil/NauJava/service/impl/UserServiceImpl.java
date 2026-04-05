@@ -1,9 +1,7 @@
 package ru.Daniil.NauJava.service.impl;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.Daniil.NauJava.config.AppConfig;
 import ru.Daniil.NauJava.model.User;
 import ru.Daniil.NauJava.repo.UserRepository;
 import ru.Daniil.NauJava.service.UserService;
@@ -16,19 +14,11 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-    private final AppConfig appConfig;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository repository, AppConfig appConfig, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
-        this.appConfig = appConfig;
         this.passwordEncoder = passwordEncoder;
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("Приложение: " + appConfig.getAppName());
-        System.out.println("Версия: " + appConfig.getAppVersion());
     }
 
     @Override
