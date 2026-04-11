@@ -1,5 +1,6 @@
 package ru.Daniil.NauJava.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -67,6 +68,7 @@ public class BankCard {
         this.paymentSystem = paymentSystem;
     }
 
+    @JsonIgnore
     public BankAccount getBankAccount() {
         return bankAccount;
     }

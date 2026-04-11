@@ -1,7 +1,6 @@
 package ru.Daniil.NauJava.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,9 +14,6 @@ public class RegistrationController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     @GetMapping("/registration")
     public String showRegistrationForm() {
         return "registration";
@@ -30,8 +26,6 @@ public class RegistrationController {
 
     @PostMapping("/registration")
     public String registerUser(User user, Model model) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
         try {
             userService.createUser(user.getFullName(), user.getEmail(), user.getPhone(), user.getPassword());
             return "redirect:/login";
