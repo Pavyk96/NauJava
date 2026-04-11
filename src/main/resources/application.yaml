@@ -2,7 +2,32 @@ spring:
   application:
     name: NauJava
 
-app:
+  liquibase:
+    change-log: db/changelog-master.yaml
+    enabled: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/project
+    username: project
+    password: project
+    driver-class-name: org.postgresql.Driver
+    initialization-mode: always
+
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.format_sql: true
+
+  doc:
+    api-docs:
+      enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui/index.html
+
   name: Bank Console App
   version: 1.0.0
 
@@ -14,3 +39,7 @@ management:
   endpoint:
     health:
       show-details: always
+
+  kafka:
+    consumer:
+    producer:

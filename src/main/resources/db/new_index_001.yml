@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Daniil
+      changes:
+        - dropIndex:
+            indexName: index_name
+            tableName: cart
+
+        - createIndex:
+            indexName: index_name
+            tableName: cart
+            columns:
+              - column:
+                  name: name
+            indexType: HASH

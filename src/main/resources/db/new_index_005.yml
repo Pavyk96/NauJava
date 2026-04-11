@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: Daniil
+      changes:
+        - sql:
+            dbms: postgresql
+            comment: "Create GIST index on the 'id' and 'name' column"
+            sql: |
+              CREATE INDEX new_abs_NIGGER_inx
+              ON item (id, name)

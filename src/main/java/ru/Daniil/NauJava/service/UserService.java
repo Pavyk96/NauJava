@@ -5,17 +5,17 @@ import ru.Daniil.NauJava.model.User;
 import java.util.List;
 
 /**
- * UserService
+ * Сервис пользователей
  *
  * @author Daniil Mezev
  */
 public interface UserService {
 
-    User createUser(String name, int balance);
+    User createUser(String fullName, String email, String phone, String password);
 
     List<User> getAllUsers();
 
     User getUserById(Long id);
 
-    void transferMoney(Long fromUserId, Long toUserId, int amount);
+    User getUserByUsername(String username);
 }
