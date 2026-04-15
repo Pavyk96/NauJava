@@ -12,8 +12,9 @@ import ru.Daniil.NauJava.service.ReportService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 /**
  * Реализация сервиса отчетов.
@@ -26,13 +27,16 @@ public class ReportServiceImpl implements ReportService {
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
     private final BankAccountRepository bankAccountRepository;
+    private final ExecutorService reportExecutorService;
 
     public ReportServiceImpl(ReportRepository reportRepository,
                              UserRepository userRepository,
-                             BankAccountRepository bankAccountRepository) {
+                             BankAccountRepository bankAccountRepository,
+                             ExecutorService reportExecutorService) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
         this.bankAccountRepository = bankAccountRepository;
+        this.reportExecutorService = reportExecutorService;
     }
 
     @Override
@@ -42,7 +46,7 @@ public class ReportServiceImpl implements ReportService {
                 Статус отчета: CREATED
                 """);
         Report savedReport = reportRepository.save(report);
-        CompletableFuture.runAsync(() -> generateReport(savedReport.getId()));
+        generateReport(savedReport.getId());
         return savedReport.getId();
     }
 
@@ -53,53 +57,51 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void generateReport(Long reportId) {
-        Report report = getReport(reportId);
         long totalStartTime = System.currentTimeMillis();
 
-        AtomicLong userCount = new AtomicLong();
-        AtomicLong userCountElapsed = new AtomicLong();
-        AtomicLong bankAccountsElapsed = new AtomicLong();
-        AtomicReference<List<BankAccount>> bankAccountsRef = new AtomicReference<>(List.of());
+        CompletableFuture<TimedResult<Long>> userCountFuture = CompletableFuture.supplyAsync(
+                () -> measure(userRepository::count),
+                reportExecutorService
+        );
+        CompletableFuture<TimedResult<List<BankAccount>>> bankAccountsFuture = CompletableFuture.supplyAsync(
+                () -> measure(() -> new ArrayList<>(bankAccountRepository.findAllWithUser())),
+                reportExecutorService
+        );
 
-        try {
-            Thread usersThread = new Thread(() -> {
-                long startTime = System.currentTimeMillis();
-                userCount.set(userRepository.count());
-                userCountElapsed.set(System.currentTimeMillis() - startTime);
-            });
+        userCountFuture
+                .thenCombine(bankAccountsFuture, (userCount, bankAccounts) -> {
+                    Report report = getReport(reportId);
+                    report.setContent(buildReportContent(
+                            userCount.value(),
+                            userCount.elapsedMillis(),
+                            bankAccounts.value(),
+                            bankAccounts.elapsedMillis(),
+                            System.currentTimeMillis() - totalStartTime
+                    ));
+                    report.setStatus(ReportStatus.COMPLETED);
+                    return report;
+                })
+                .exceptionally(exception -> {
+                    Report report = getReport(reportId);
+                    report.setStatus(ReportStatus.ERROR);
+                    report.setContent(buildErrorContent("Ошибка при формировании отчета: "
+                            + getExceptionMessage(exception)));
+                    return report;
+                })
+                .thenAccept(reportRepository::save);
+    }
 
-            Thread bankAccountsThread = new Thread(() -> {
-                long startTime = System.currentTimeMillis();
-                bankAccountsRef.set(new ArrayList<>(bankAccountRepository.findAllWithUser()));
-                bankAccountsElapsed.set(System.currentTimeMillis() - startTime);
-            });
+    private <T> TimedResult<T> measure(Supplier<T> supplier) {
+        long startTime = System.currentTimeMillis();
+        T value = supplier.get();
+        return new TimedResult<>(value, System.currentTimeMillis() - startTime);
+    }
 
-            usersThread.start();
-            bankAccountsThread.start();
-
-            usersThread.join();
-            bankAccountsThread.join();
-
-            long totalElapsed = System.currentTimeMillis() - totalStartTime;
-
-            report.setContent(buildReportContent(
-                    userCount.get(),
-                    userCountElapsed.get(),
-                    bankAccountsRef.get(),
-                    bankAccountsElapsed.get(),
-                    totalElapsed
-            ));
-            report.setStatus(ReportStatus.COMPLETED);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            report.setStatus(ReportStatus.ERROR);
-            report.setContent(buildErrorContent("Формирование отчета было прервано"));
-        } catch (Exception e) {
-            report.setStatus(ReportStatus.ERROR);
-            report.setContent(buildErrorContent("Ошибка при формировании отчета: " + e.getMessage()));
-        }
-
-        reportRepository.save(report);
+    private String getExceptionMessage(Throwable exception) {
+        Throwable cause = exception instanceof CompletionException && exception.getCause() != null
+                ? exception.getCause()
+                : exception;
+        return cause.getMessage();
     }
 
     private String buildReportContent(long userCount,
@@ -142,5 +144,8 @@ public class ReportServiceImpl implements ReportService {
 
     private String buildErrorContent(String message) {
         return "Отчет не сформирован. Статус отчета: ERROR. " + message;
+    }
+
+    private record TimedResult<T>(T value, long elapsedMillis) {
     }
 }
