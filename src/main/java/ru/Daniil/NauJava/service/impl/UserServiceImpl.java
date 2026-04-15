@@ -1,28 +1,28 @@
 package ru.Daniil.NauJava.service.impl;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.Daniil.NauJava.config.AppConfig;
 import ru.Daniil.NauJava.model.User;
 import ru.Daniil.NauJava.repo.UserRepository;
 import ru.Daniil.NauJava.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-/**
- * UserServiceImpl
- *
- * @author Daniil Mezev
- */
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
     private final AppConfig appConfig;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository repository, AppConfig appConfig) {
+    public UserServiceImpl(UserRepository repository, AppConfig appConfig, PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.appConfig = appConfig;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostConstruct
@@ -32,24 +32,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(String name, int balance) {
-        if (name == null || name.isBlank()) {
+    public User createUser(String fullName, String email, String phone, String password) {
+        if (fullName == null || fullName.isBlank()) {
             throw new IllegalArgumentException("Имя не должно быть пустым");
         }
-        if (balance < 0) {
-            throw new IllegalArgumentException("Баланс не может быть отрицательным");
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email не должен быть пустым");
+        }
+        if (phone == null || phone.isBlank()) {
+            throw new IllegalArgumentException("Телефон не должен быть пустым");
         }
 
-        User user = new User();
-        user.setName(name);
-        user.setBalance(balance);
+        String hashedPassword = passwordEncoder.encode(password);
 
-        return repository.create(user);
+        User user = new User();
+        user.setFullName(fullName);
+        user.setEmail(email);
+        user.setPhone(phone);
+        user.setPassword(hashedPassword);
+
+        return repository.save(user);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return repository.findAll();
+        List<User> users = new ArrayList<>();
+        repository.findAll().forEach(users::add);
+        return users;
     }
 
     @Override
@@ -59,25 +68,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void transferMoney(Long fromUserId, Long toUserId, int amount) {
-        if (fromUserId.equals(toUserId)) {
-            throw new IllegalArgumentException("Нельзя переводить деньги самому себе");
-        }
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Сумма перевода должна быть больше 0");
-        }
-
-        User fromUser = getUserById(fromUserId);
-        User toUser = getUserById(toUserId);
-
-        if (fromUser.getBalance() < amount) {
-            throw new IllegalArgumentException("Недостаточно средств для перевода");
-        }
-
-        fromUser.setBalance(fromUser.getBalance() - amount);
-        toUser.setBalance(toUser.getBalance() + amount);
-
-        repository.update(fromUser);
-        repository.update(toUser);
+    public User getUserByUsername(String username) {
+        return repository.findByEmail(username)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь с username=" + username + " не найден"));
     }
 }
